@@ -1,15 +1,10 @@
 <script>
-  import { mapState } from 'pinia'
+  import { mapState, mapWritableState } from 'pinia'
   import { useCounterStore } from '../stores/counter'
     export default {
       data: () => ({
         selected: 2,
         selectedEmails: [],
-        // allEmails: [
-        //   'Your 7-figure plan goes bye-bye at midnight',
-        //   '[WEEKEND ONLY] Get this NOW before',
-        //   'Uh-oh, your prescription is expiring'
-        // ],
         selectAll: false
       }),
       watch: {
@@ -22,34 +17,15 @@
         }
       },
       computed: {
-        // ...mapState(useCounterStore, ['allEmails']),
-        ...mapState(useCounterStore, ['archivedEmails'])
+        ...mapState(useCounterStore, ['archivedEmails']),
+        ...mapWritableState(useCounterStore, ['dialogOpen'])
       },
       methods: {
-        // markAsRead () {
-        //   if (this.selectedEmails.length !== 0) {
-        //     this.selectedEmails.forEach((email) => {
-        //       this.allEmails.forEach((singleEmail, index) => {
-        //         if (email === singleEmail.text) {
-        //           this.allEmails[index].active = false;
-        //         }
-        //       })
-        //     })
-        //     this.selectedEmails = [];
-        //   }
-        // },
-        // archiveEmails () {
-        //   if (this.selectedEmails.length !== 0) {
-        //     this.selectedEmails.forEach((email) => {
-        //       this.allEmails.forEach((singleEmail, index) => {
-        //         if (email === singleEmail.text) {
-        //           this.archivedEmails.push(email);
-        //           this.allEmails.splice(index, 1);
-        //         }
-        //       })
-        //     })
-        //   }
-        // }
+        openDialog (e) {
+          if(!e.target.classList.contains('verify-click')) {
+            this.dialogOpen = true
+          }
+        }
       }
     }
   </script>
@@ -61,12 +37,10 @@
           <input type="checkbox" id="all" v-model="selectAll">
           <span class="checkmark"></span>
         </label>
-        <!-- <button class="inbox__button" @click="markAsRead">Mark as read (r)</button> -->
-        <!-- <button class="inbox__button" @click="archiveEmails">Archive (a)</button> -->
       </div>
       <div class="inbox__emails">
         <template v-for="(email, index) in archivedEmails" :key="index">
-          <div class="inbox__email inbox__email--disabled">
+          <div class="inbox__email inbox__email--disabled" @click="openDialog">
             <label class="check-parent" :for="`first-${index}`">{{ email }}
               <input type="checkbox" checked="checked" :id="`first-${index}`" :value="email" v-model="selectedEmails">
               <span class="checkmark"></span>

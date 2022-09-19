@@ -1,65 +1,66 @@
 <script>
-import { mapWritableState } from 'pinia'
-import { useCounterStore } from '../stores/counter'
-  export default {
-    data: () => ({
-      // selected: 2,
-      selectedEmails: [],
-      // allEmails: [
-      //   'Your 7-figure plan goes bye-bye at midnight',
-      //   '[WEEKEND ONLY] Get this NOW before',
-      //   'Uh-oh, your prescription is expiring'
-      // ],
-      selectAll: false
-    }),
-    watch: {
-      selectAll (val) {
-        if (val) {
-          this.selectedEmails = this.allEmails.map(email => email.text);
-        } else {
-          this.selectedEmails = [];
-        }
+import { mapWritableState } from "pinia";
+import { useCounterStore } from "../stores/counter";
+export default {
+  data: () => ({
+    // selected: 2,
+    selectedEmails: [],
+    selectAll: false,
+  }),
+  watch: {
+    selectAll(val) {
+      if (val) {
+        this.selectedEmails = this.allEmails.map((email) => email.text);
+      } else {
+        this.selectedEmails = [];
       }
     },
-    computed: {
-      ...mapWritableState(useCounterStore, ['allEmails']),
-      ...mapWritableState(useCounterStore, ['archivedEmails'])
+  },
+  computed: {
+    ...mapWritableState(useCounterStore, ["allEmails"]),
+    ...mapWritableState(useCounterStore, ["archivedEmails"]),
+    ...mapWritableState(useCounterStore, ['dialogOpen'])
+  },
+  methods: {
+    markAsRead() {
+      if (this.selectedEmails.length !== 0) {
+        this.selectedEmails.forEach((email) => {
+          this.allEmails.forEach((singleEmail, index) => {
+            if (email === singleEmail.text) {
+              this.allEmails[index].active = false;
+            }
+          });
+        });
+        this.selectedEmails = [];
+      }
     },
-    methods: {
-      markAsRead () {
-        if (this.selectedEmails.length !== 0) {
-          this.selectedEmails.forEach((email) => {
-            this.allEmails.forEach((singleEmail, index) => {
-              if (email === singleEmail.text) {
-                this.allEmails[index].active = false;
-              }
-            })
-          })
-          this.selectedEmails = [];
-        }
-      },
-      archiveEmails () {
-        if (this.selectedEmails.length !== 0) {
-          this.selectedEmails.forEach((email) => {
-            this.allEmails.forEach((singleEmail, index) => {
-              if (email === singleEmail.text) {
-                this.archivedEmails.push(email);
-                this.allEmails.splice(index, 1);
-              }
-            })
-          })
-          this.selectedEmails = [];
-        }
+    archiveEmails () {
+      if (this.selectedEmails.length !== 0) {
+        this.selectedEmails.forEach((email) => {
+          this.allEmails.forEach((singleEmail, index) => {
+            if (email === singleEmail.text) {
+              this.archivedEmails.push(email);
+              this.allEmails.splice(index, 1);
+            }
+          });
+        });
+        this.selectedEmails = [];
+      }
+    },
+    openDialog (e) {
+      if(!e.target.classList.contains('verify-click')) {
+        this.dialogOpen = true
       }
     }
-  }
+  },
+};
 </script>
 <template>
   <div class="inbox">
     <h2 class="inbox__header">Emails Selected {{ selectedEmails.length }}</h2>
     <div class="inbox__nav">
       <label class="check-parent" for="all">
-        <input type="checkbox" id="all" v-model="selectAll">
+        <input type="checkbox" id="all" v-model="selectAll" />
         <span class="checkmark"></span>
       </label>
       <button class="inbox__button" @click="markAsRead">Mark as read (r)</button>
@@ -67,14 +68,24 @@ import { useCounterStore } from '../stores/counter'
     </div>
     <div class="inbox__emails">
       <template v-for="(email, index) in allEmails" :key="index">
-        <div class="inbox__email" :class="!email.active ? 'inbox__email--disabled' : ''">
-          <label class="check-parent" :for="`first-${index}`">{{ email.text }}
-            <input type="checkbox" checked="checked" :id="`first-${index}`" :value="email.text" v-model="selectedEmails">
-            <span class="checkmark"></span>
+        <div class="inbox__email" :class="!email.active ? 'inbox__email--disabled' : ''" @click="openDialog">
+          <label class="check-parent" :for="`first-${index}`"
+            >
+            <input
+              type="checkbox"
+              checked="checked"
+              class="verify-click"
+              :id="`first-${index}`"
+              :value="email.text"
+              v-model="selectedEmails"
+            />
+            <span class="checkmark verify-click"></span>
           </label>
+          <span>{{ email.text }}</span>
         </div>
       </template>
     </div>
+    <div class="dialog"></div>
   </div>
 </template>
 
@@ -100,12 +111,14 @@ import { useCounterStore } from '../stores/counter'
     border: none;
     text-align: left;
     margin-left: 30px;
-    border: 1px solid #ddd
+    border: 1px solid #ddd;
   }
   &__email {
+    display: flex;
+    align-items: center;
     border: 1px solid #ddd;
     background-color: #eee;
-    padding: 16px 15px 0;
+    padding: 16px 15px;
     margin-bottom: 30px;
     &--disabled {
       opacity: 0.5;
@@ -152,7 +165,7 @@ import { useCounterStore } from '../stores/counter'
 
 /* When the checkbox is checked, add a blue background */
 .check-parent input:checked ~ .checkmark {
-  background-color: #2196F3;
+  background-color: #2196f3;
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */

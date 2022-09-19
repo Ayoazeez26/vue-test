@@ -1,14 +1,13 @@
 <script lang="ts">
-// import { RouterLink, RouterView } from 'vue-router';
-// import { useRouter, useRoute } from 'vue-router';
-import { mapState } from 'pinia'
+import { mapState, mapWritableState } from 'pinia'
 import { useCounterStore } from '../stores/counter'
 
 export default {
   name: 'DashboardLayout',
   computed: {
     ...mapState(useCounterStore, ['allEmails']),
-    ...mapState(useCounterStore, ['archivedEmails'])
+    ...mapState(useCounterStore, ['archivedEmails']),
+    ...mapWritableState(useCounterStore, ['dialogOpen'])
   },
 }
 </script>
@@ -24,6 +23,18 @@ export default {
     <div class="dashboard__main">
       <p class="dashboard__header">{{ $route.meta.pageTitle }}</p>
       <RouterView></RouterView>
+    </div>
+    <div class="dialog" v-if="dialogOpen">
+      <div class="dialog__left" @click="dialogOpen = false" />
+      <div class="dialog__content">
+        <p class="dialog__close">Close (Esc)</p>
+        <div class="dialog__nav">
+          <button class="dialog__button" @click="markAsRead">Mark as read (r)</button>
+          <button class="dialog__button" @click="archiveEmails">Archive (a)</button>
+        </div>
+        <p class="dialog__header">Your 7-figure plan goes bye-bye at midnight</p>
+        <p class="dialog__description">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the ind</p>
+      </div>
     </div>
   </main>
 </template>
@@ -75,6 +86,57 @@ export default {
   }
   &__header {
     font-size: 3rem;
+  }
+}
+.dialog {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 100vh;
+  min-width: 100vw;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: flex-end;
+  &__left {
+    background-color: transparent;
+    width: 60%;
+    min-height: 100%;
+  }
+  &__content {
+    background-color: white;
+    width: 40%;
+    min-height: 100%;
+    padding: 20px;
+  }
+  &__close {
+    text-decoration: underline;
+  }
+  &__nav {
+    margin-bottom: 30px;
+    display: flex;
+    // justify-content: space-between;
+    align-items: center;
+  }
+  &__button {
+    color: black;
+    background-color: #eee;
+    padding: 12px 20px;
+    margin: 5px 0;
+    border-radius: 4px;
+    font-weight: 500;
+    border: none;
+    text-align: left;
+    margin-right: 30px;
+    border: 1px solid #ddd;
+  }
+  &__header {
+    font-weight: 600;
+    font-size: 32px;
+  }
+  &__description {
+    font-size: 20px;
+    margin-top: 24px;
   }
 }
 </style>
